@@ -103,7 +103,10 @@ fn extract_source_quote(source: &str, span: Span) -> String {
     let start_offset = span.start_offset as usize;
     let end_offset = span.end_offset as usize;
     let end = end_offset.min(source.len());
-    source[start_offset..end].to_string()
+    source
+        .get(start_offset..end)
+        .map(|s| s.to_string())
+        .unwrap_or_default()
 }
 
 /// Parses template source and collects template loads with explicit parser configuration.

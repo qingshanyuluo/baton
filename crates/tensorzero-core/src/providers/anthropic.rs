@@ -87,7 +87,9 @@ fn check_api_base_suffix(api_base: &Url) {
 fn normalize_api_base(mut api_base: Url) -> Url {
     let path = api_base.path().to_string();
     if path.ends_with("/messages") {
-        let new_path = &path[..path.len() - "/messages".len()];
+        let new_path = path
+            .get(..path.len() - "/messages".len())
+            .unwrap_or_default();
         // Ensure trailing slash
         let new_path = if new_path.ends_with('/') {
             new_path.to_string()
@@ -97,7 +99,9 @@ fn normalize_api_base(mut api_base: Url) -> Url {
         api_base.set_path(&new_path);
         api_base
     } else if path.ends_with("/messages/") {
-        let new_path = &path[..path.len() - "/messages/".len()];
+        let new_path = path
+            .get(..path.len() - "/messages/".len())
+            .unwrap_or_default();
         // Ensure trailing slash
         let new_path = if new_path.ends_with('/') {
             new_path.to_string()

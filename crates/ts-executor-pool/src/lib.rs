@@ -24,7 +24,7 @@ pub static SES_INIT_JS: &str = include_str!("./js/ses_init.js");
 /// slice. If the text is already within the limit it is returned unchanged.
 pub fn truncate_to_chars(text: &str, max_chars: usize) -> &str {
     match text.char_indices().nth(max_chars) {
-        Some((idx, _)) => &text[..idx],
+        Some((idx, _)) => text.get(..idx).unwrap_or(text),
         None => text,
     }
 }

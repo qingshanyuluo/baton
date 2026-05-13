@@ -1649,7 +1649,9 @@ mod tests {
         assert!(
             logs[0].contains("... (truncated, 10000 chars total)"),
             "Should contain truncation suffix, got: {}",
-            &logs[0][logs[0].len().saturating_sub(60)..]
+            logs[0]
+                .get(logs[0].len().saturating_sub(60)..)
+                .unwrap_or_default()
         );
     }
 

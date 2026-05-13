@@ -158,8 +158,8 @@ impl<'de> Deserialize<'de> for Unknown {
                 ));
             };
 
-            let model_name = &rest[..suffix_pos];
-            let provider_name = &rest[suffix_pos + SUFFIX.len()..];
+            let model_name = rest.get(..suffix_pos).unwrap_or_default();
+            let provider_name = rest.get(suffix_pos + SUFFIX.len()..).unwrap_or_default();
 
             Ok((model_name.to_string(), provider_name.to_string()))
         }
