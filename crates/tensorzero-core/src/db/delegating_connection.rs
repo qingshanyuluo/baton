@@ -59,9 +59,8 @@ use crate::db::workflow_evaluation_queries::{
 };
 use crate::db::{
     CacheStatisticsTimePoint, ConfigQueries, DICLExampleWithDistance, DICLQueries,
-    DeploymentIdQueries, EpisodeByIdRow, EpisodeQueries, HowdyFeedbackCounts, HowdyInferenceCounts,
-    HowdyQueries, HowdyTokenUsage, ModelLatencyDatapoint, ModelUsageTimePoint, StoredDICLExample,
-    TableBoundsWithCount, VariantUsageTimePoint,
+    DeploymentIdQueries, EpisodeByIdRow, EpisodeQueries, ModelLatencyDatapoint,
+    ModelUsageTimePoint, StoredDICLExample, TableBoundsWithCount, VariantUsageTimePoint,
 };
 use crate::endpoints::inference::InferenceResponse;
 use crate::endpoints::stored_inferences::v1::types::InferenceFilter;
@@ -179,7 +178,6 @@ pub struct DelegatingDatabaseConnection {
 pub trait DelegatingDatabaseQueries:
     ConfigQueries
     + DeploymentIdQueries
-    + HowdyQueries
     + FeedbackQueries
     + InferenceQueries
     + DatasetQueries
@@ -269,21 +267,6 @@ impl ConfigQueries for DelegatingDatabaseConnection {
 impl DeploymentIdQueries for DelegatingDatabaseConnection {
     async fn get_deployment_id(&self) -> Result<String, DelayedError> {
         self.get_database().get_deployment_id().await
-    }
-}
-
-#[async_trait]
-impl HowdyQueries for DelegatingDatabaseConnection {
-    async fn count_inferences_for_howdy(&self) -> Result<HowdyInferenceCounts, Error> {
-        self.get_database().count_inferences_for_howdy().await
-    }
-
-    async fn count_feedbacks_for_howdy(&self) -> Result<HowdyFeedbackCounts, Error> {
-        self.get_database().count_feedbacks_for_howdy().await
-    }
-
-    async fn get_token_totals_for_howdy(&self) -> Result<HowdyTokenUsage, Error> {
-        self.get_database().get_token_totals_for_howdy().await
     }
 }
 

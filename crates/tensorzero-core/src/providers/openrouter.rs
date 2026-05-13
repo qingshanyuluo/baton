@@ -203,8 +203,8 @@ impl InferenceProvider for OpenRouterProvider {
         })?;
         let mut request_builder = http_client
             .post(request_url)
-            .header("X-Title", "TensorZero")
-            .header("HTTP-Referer", "https://www.tensorzero.com/");
+            .header("X-Title", "TensorZero");
+        // HTTP-Referer removed (was tensorzero.com commercial referral)
 
         if let Some(api_key) = api_key {
             request_builder = request_builder.bearer_auth(api_key.expose_secret());
@@ -313,8 +313,8 @@ impl InferenceProvider for OpenRouterProvider {
         let start_time = Instant::now();
         let mut request_builder = http_client
             .post(request_url)
-            .header("X-Title", "TensorZero")
-            .header("HTTP-Referer", "https://www.tensorzero.com/");
+            .header("X-Title", "TensorZero");
+        // HTTP-Referer removed (was tensorzero.com commercial referral)
         if let Some(api_key) = api_key {
             request_builder = request_builder.bearer_auth(api_key.expose_secret());
         }
@@ -386,10 +386,8 @@ impl EmbeddingProvider for OpenRouterProvider {
         );
         let request_url = get_embedding_url(&OPENROUTER_DEFAULT_BASE_URL)?;
         let start_time = Instant::now();
-        let mut request_builder = client
-            .post(request_url)
-            .header("X-Title", "TensorZero")
-            .header("HTTP-Referer", "https://www.tensorzero.com/");
+        let mut request_builder = client.post(request_url).header("X-Title", "TensorZero");
+        // HTTP-Referer removed (was tensorzero.com commercial referral)
         if let Some(api_key) = api_key {
             request_builder = request_builder.bearer_auth(api_key.expose_secret());
         }

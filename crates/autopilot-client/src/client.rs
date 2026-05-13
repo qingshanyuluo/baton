@@ -30,7 +30,7 @@ use crate::types::{
 };
 
 /// Default base URL for the Autopilot API.
-pub const DEFAULT_BASE_URL: &str = "https://api.autopilot.tensorzero.com";
+pub const DEFAULT_BASE_URL: &str = "http://localhost:3000";
 /// Default name for the durable queue used by autopilot
 pub const DEFAULT_SPAWN_QUEUE_NAME: &str = "autopilot";
 

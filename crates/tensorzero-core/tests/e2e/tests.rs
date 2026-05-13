@@ -23,7 +23,6 @@ mod experimentation;
 mod fallback;
 mod feedback;
 mod health;
-mod howdy;
 mod human_feedback;
 mod image_url;
 mod inference;

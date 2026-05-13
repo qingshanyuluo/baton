@@ -24,7 +24,6 @@ pub mod experimentation;
 pub mod feedback;
 mod file_writes;
 pub mod function_config_writes;
-mod howdy_queries;
 pub mod inference_queries;
 pub mod model_inferences;
 pub mod postgres_setup;

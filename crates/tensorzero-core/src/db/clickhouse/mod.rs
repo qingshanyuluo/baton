@@ -35,7 +35,6 @@ pub mod dicl_queries;
 mod episode_queries;
 pub mod evaluation_queries;
 pub mod feedback;
-mod howdy_queries;
 pub mod inference_queries;
 pub mod migration_manager;
 pub mod model_inferences;

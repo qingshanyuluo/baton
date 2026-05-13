@@ -46,7 +46,7 @@ use crate::db::valkey::ValkeyConnectionInfo;
 use crate::endpoints;
 use crate::endpoints::openai_compatible::RouterExt;
 use crate::error::{DelayedError, Error, ErrorDetails};
-use crate::howdy::{get_deployment_id, setup_howdy};
+use crate::howdy::get_deployment_id;
 use crate::http::TensorzeroHttpClient;
 use crate::rate_limiting::{RateLimitingConfig, RateLimitingManager};
 use autopilot_client::AutopilotClient;
@@ -695,13 +695,6 @@ impl GatewayHandle {
         )?;
 
         let cancel_token = CancellationToken::new();
-        setup_howdy(
-            &config,
-            clickhouse_connection_info.clone(),
-            postgres_connection_info.clone(),
-            primary_datastore,
-            cancel_token.clone(),
-        );
 
         let deployment_id = if primary_datastore == PrimaryDatastore::Disabled {
             None
