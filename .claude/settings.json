@@ -1,0 +1,44 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(cargo:*)",
+      "Bash(git:*)",
+      "Bash(pnpm:*)",
+      "Bash(uv:*)",
+      "Bash(docker:*)",
+      "Bash(curl:*)",
+      "Bash(ls:*)",
+      "Bash(find:*)",
+      "Bash(grep:*)",
+      "Bash(cat:*)",
+      "Bash(head:*)",
+      "Bash(wc:*)",
+      "Bash(mkdir:*)",
+      "Bash(cp:*)",
+      "Bash(mv:*)",
+      "Bash(rm:*)",
+      "Bash(gh:*)",
+      "Bash(rustup:*)",
+      "Bash(helm:*)",
+      "Bash(kubectl:*)",
+      "Bash(kubeconform:*)"
+    ],
+    "deny": [
+      "Bash(gh pr merge:*)",
+      "Bash(gh pr close:*)",
+      "Bash(git push --force:*)",
+      "Bash(git push --force-with-lease:*)",
+      "Bash(git push origin --delete main:*)",
+      "Bash(git reset --hard:*)",
+      "Bash(git clean -ffdx:*)",
+      "Bash(git rebase -i:*)",
+      "Bash(git filter-branch:*)",
+      "Bash(docker compose down -v:*)",
+      "Bash(docker volume rm:*)",
+      "Bash(docker system prune:*)",
+      "Bash(rm -rf .git:*)",
+      "Bash(rm -rf /:*)",
+      "Bash(cargo publish:*)"
+    ]
+  }
+}

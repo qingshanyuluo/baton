@@ -48,6 +48,7 @@ node_modules/
 **/.claude/*
 !./claude/commands/
 !./claude/commands/**
+!.claude/settings.json
 
 ui/fixtures/large-fixtures
 ui/fixtures/small-fixtures
