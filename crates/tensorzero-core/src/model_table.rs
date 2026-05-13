@@ -129,7 +129,7 @@ fn check_shorthand<'a>(prefixes: &[&'a str], key: &'a str) -> Option<Shorthand<'
     for prefix in prefixes {
         if let Some(model_name) = key.strip_prefix(prefix) {
             // Remove the last two characters of the prefix to get the provider type
-            let provider_type = &prefix[..prefix.len() - 2];
+            let provider_type = prefix.get(..prefix.len() - 2).unwrap_or_default();
             return Some(Shorthand {
                 provider_type,
                 model_name,

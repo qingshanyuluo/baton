@@ -47,8 +47,15 @@ pub fn process_think_blocks(
             api_type,
         }))
     } else if let (Some(start), Some(end)) = (text.find(THINK_TAG), text.find(END_THINK_TAG)) {
-        let reasoning = text[start + THINK_TAG_LEN..end].to_string();
-        let cleaned = format!("{}{}", &text[..start], &text[end + END_THINK_TAG_LEN..]);
+        let reasoning = text
+            .get(start + THINK_TAG_LEN..end)
+            .unwrap_or_default()
+            .to_string();
+        let cleaned = format!(
+            "{}{}",
+            text.get(..start).unwrap_or_default(),
+            text.get(end + END_THINK_TAG_LEN..).unwrap_or_default()
+        );
         Ok((cleaned, Some(reasoning)))
     } else {
         Ok((text.to_string(), None))

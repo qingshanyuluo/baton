@@ -20,7 +20,8 @@ fn main() {
     let checker_js = include_str!("src/js/ts_checker.js");
     // Include hashes of both JS inputs in the snapshot filename so it is
     // regenerated whenever either changes.
-    let checker_hash = &blake3::hash(checker_js.as_bytes()).to_hex()[..16];
+    let checker_hash = blake3::hash(checker_js.as_bytes()).to_hex();
+    let checker_hash = checker_hash.get(..16).unwrap_or_default();
     let snapshot_path = format!("{out_dir}/TS_CHECKER_SNAPSHOT_{TS_BLAKE3}_{checker_hash}.bin");
 
     // Step 1: Download typescript.js (cached by version)

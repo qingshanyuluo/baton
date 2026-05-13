@@ -1,3 +1,8 @@
+# Session setup
+
+- Before starting work, run `./scripts/preflight.sh` (from repo root) to get current git state, open PRs, and a fast `cargo check`. This takes ~15s and gives you the same context a human would get from looking at the repo.
+- Before committing, run `./scripts/ensure-hooks.sh` (idempotent — only installs when missing) so that `cargo fmt --check` and pre-commit checks gate every commit. The hook auto-installs on first use in new clones and worktrees.
+
 # Rust
 
 - The Cargo workspace root is `crates/`. Run all `cargo` commands from that directory (e.g. `cd crates && cargo check`).
@@ -11,6 +16,23 @@
   - Run unit tests with `cargo test-unit-fast` which uses `nextest` under the hood.
 - Use `#[expect(clippy::...)]` instead of `#[allow(clippy::...)]`.
 - Prefer early returns over nested `match`/`if` blocks. For example, use `let ... else { return Err(...) };` or `if !condition { return Err(...) }` to reduce nesting.
+
+## Feedback loop tiering
+
+Choose the lightest verification that catches the class of change. CI is the enforcement point for heavyweight tests; don't run them locally unless you're touching the paths they cover.
+
+| Change scope | Local verification | ~Time |
+|---|---|---|
+| Pure types / structs / trait defs / doc | `cargo check-all` | 5s |
+| Business logic (no DB, no I/O) | `cargo test-unit-fast` | 10s |
+| sqlx queries / DB interface | `cargo test-unit-fast` + `cargo sqlx prepare --workspace -- --all-features --all-targets` | 30s |
+| Gateway boot / config / app state | `cargo build-e2e` (compiles the e2e binary) | 60s |
+| Provider / inference pipeline | unit tests locally; CI runs e2e | — |
+| TypeScript bindings (ts-rs / napi) | `pnpm build-bindings && pnpm -r typecheck` | 20s |
+| Python client / schemas | `cd crates/tensorzero-python && uv run pyright` | 15s |
+| UI (tensorzero-ui) | `pnpm --filter=tensorzero-ui run typecheck` | 15s |
+
+When in doubt, run `cargo test-unit-fast` + `cargo clippy --all-targets --all-features -- -D warnings`. Let CI catch the rest.
 - For internally-tagged enums (`#[serde(tag = "...")]`) without lifetimes, use `TensorZeroDeserialize` instead of `Deserialize` for better error messages via `serde_path_to_error`.
 - When converting between `Stored*` types and core types, use explicit match-based conversions (e.g. `From` impls or helper functions). Do not round-trip through `serde_json::to_value`/`serde_json::from_value` for type conversions — `serde_json` is only appropriate when the source is already a `serde_json::Value`.
 
@@ -39,6 +61,63 @@
 - API handler will be a thin function that handles properties injected by Axum and calls a function to perform business logic.
 - Business logic layer will generate all data that TensorZero is responsible for (e.g. UUIDs for new datapoints, `staled_at` timestamps).
 - Database layer (ClickHouse and/or Postgres) will insert data as-is into the backing database, with the only exception of `updated_at` timestamps which we insert by calling native functions in the database.
+
+## Parallel worktree topology
+
+When dispatching multiple agents via `Agent({ isolation: "worktree" })`, check file-domain overlap first. Agents that touch disjoint crate sets can run in parallel. Agents that share any coordination point must be serialized or pre-merged on `main`.
+
+### Shared coordination points (serialize on these)
+
+```
+crates/Cargo.toml                        — workspace dependencies, features, lints
+crates/Cargo.lock                        — lockfile
+crates/.cargo/config.toml               — cargo aliases, rustflags
+crates/deny.toml                         — cargo-deny bans/licenses
+crates/clippy.toml                       — disallowed-types/methods
+crates/rust-toolchain.toml              — MSRV pin
+crates/tensorzero-core/src/db/          — DB schema, migrations, sqlx query cache
+crates/tensorzero-stored-config/        — stored config types (multi-crate dependency)
+crates/tensorzero-types/                — shared types (multi-crate dependency)
+crates/tensorzero-derive/               — proc macros (compiler-facing)
+crates/tensorzero-inference-types/      — inference protocol types
+ui/                                      — frontend
+.github/workflows/                       — CI definitions
+```
+
+### Independently parallelizable crates
+
+```
+autopilot-client / autopilot-tools / autopilot-worker
+tensorzero-auth
+tensorzero-http
+tensorzero-mcp
+tensorzero-node
+tensorzero-overhead
+evaluations
+provider-proxy
+reqwest-sse-stream
+config-applier
+durable-tools / durable-tools-spawn
+tensorzero-config-paths
+tensorzero-error
+tensorzero-unsafe-helpers
+tensorzero-optimizers
+ts-executor-pool
+minijinja-utils
+gateway (if not touching DB/config types)
+```
+
+### Dispatch format
+
+Before launching parallel worktrees, write a one-line topology summary:
+
+```
+Dispatching:
+- A: <task>  @ feat/<branch>  (touches: <crates>)
+- B: <task>  @ feat/<branch>  (touches: <crates>)
+```
+
+If any coordination point appears in both, serialize or pre-edit the shared file on `main` first.
 
 ## For Postgres (sqlx)
 
@@ -74,3 +153,15 @@ We use `ts-rs` and `n-api` for TypeScript-Rust interoperability.
 
 - `CONTRIBUTING.md` has additional context on working on this codebase.
 - Prefer backticks (`) instead of ticks (') to wrap technical terms in comments, error messages, READMEs, etc.
+
+# Completion report format
+
+When a task is complete and CI is green, report exactly:
+
+```
+1. PR: <url>
+2. CI: <N> checks pass
+3. 验收: I verified <what you actually tested>; you can reproduce by <steps>
+```
+
+Do not paste diffs or explain the implementation — diffs are on GitHub, intent is in commit messages. Verify what you can verify: if the change is testable via `curl`, run the `curl` and report the output. If the output doesn't match expectations, fix the code — do not reword the report to hide the discrepancy.

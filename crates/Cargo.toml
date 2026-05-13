@@ -187,6 +187,13 @@ stable_sort_primitive = "deny"
 ref_option = "deny"
 unnecessary_literal_bound = "deny"
 unused_async = "deny"
+missing_safety_doc = "deny"
+string_slice = "deny"
+
+# cast_lossless is relegated to "allow" because there are too many pre-existing
+# `as` casts. New code should prefer `.into()` / `.from()` when the conversion
+# is lossless, but this must be cleaned up incrementally rather than enforced.
+cast_lossless = "allow"
 
 # The following pedantic lints are explicitly set to "allow" to give authors discretion on their use.
 default_trait_access = "allow"

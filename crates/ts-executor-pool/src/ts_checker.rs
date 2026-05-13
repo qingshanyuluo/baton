@@ -432,7 +432,7 @@ fn extract_root_type_name(bundle: &str) -> Option<&str> {
         let name_end = rest
             .find(|c: char| !c.is_alphanumeric() && c != '_')
             .unwrap_or(rest.len());
-        let name = &rest[..name_end];
+        let name = rest.get(..name_end).unwrap_or_default();
         if name.is_empty() { None } else { Some(name) }
     })
 }

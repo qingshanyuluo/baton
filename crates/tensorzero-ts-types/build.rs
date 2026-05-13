@@ -212,7 +212,7 @@ fn parse_ts_file(path: &Path) -> Option<TsFile> {
             if let Some(start) = line.find('{')
                 && let Some(end) = line.find('}')
             {
-                let names_str = &line[start + 1..end];
+                let names_str = line.get(start + 1..end).unwrap_or_default();
                 for name in names_str.split(',') {
                     let name = name.trim();
                     if !name.is_empty() {
