@@ -21,18 +21,19 @@
 
 Choose the lightest verification that catches the class of change. CI is the enforcement point for heavyweight tests; don't run them locally unless you're touching the paths they cover.
 
-| Change scope | Local verification | ~Time |
-|---|---|---|
-| Pure types / structs / trait defs / doc | `cargo check-all` | 5s |
-| Business logic (no DB, no I/O) | `cargo test-unit-fast` | 10s |
-| sqlx queries / DB interface | `cargo test-unit-fast` + `cargo sqlx prepare --workspace -- --all-features --all-targets` | 30s |
-| Gateway boot / config / app state | `cargo build-e2e` (compiles the e2e binary) | 60s |
-| Provider / inference pipeline | unit tests locally; CI runs e2e | — |
-| TypeScript bindings (ts-rs / napi) | `pnpm build-bindings && pnpm -r typecheck` | 20s |
-| Python client / schemas | `cd crates/tensorzero-python && uv run pyright` | 15s |
-| UI (tensorzero-ui) | `pnpm --filter=tensorzero-ui run typecheck` | 15s |
+| Change scope                            | Local verification                                                                        | ~Time |
+| --------------------------------------- | ----------------------------------------------------------------------------------------- | ----- |
+| Pure types / structs / trait defs / doc | `cargo check-all`                                                                         | 5s    |
+| Business logic (no DB, no I/O)          | `cargo test-unit-fast`                                                                    | 10s   |
+| sqlx queries / DB interface             | `cargo test-unit-fast` + `cargo sqlx prepare --workspace -- --all-features --all-targets` | 30s   |
+| Gateway boot / config / app state       | `cargo build-e2e` (compiles the e2e binary)                                               | 60s   |
+| Provider / inference pipeline           | unit tests locally; CI runs e2e                                                           | —     |
+| TypeScript bindings (ts-rs / napi)      | `pnpm build-bindings && pnpm -r typecheck`                                                | 20s   |
+| Python client / schemas                 | `cd crates/tensorzero-python && uv run pyright`                                           | 15s   |
+| UI (tensorzero-ui)                      | `pnpm --filter=tensorzero-ui run typecheck`                                               | 15s   |
 
 When in doubt, run `cargo test-unit-fast` + `cargo clippy --all-targets --all-features -- -D warnings`. Let CI catch the rest.
+
 - For internally-tagged enums (`#[serde(tag = "...")]`) without lifetimes, use `TensorZeroDeserialize` instead of `Deserialize` for better error messages via `serde_path_to_error`.
 - When converting between `Stored*` types and core types, use explicit match-based conversions (e.g. `From` impls or helper functions). Do not round-trip through `serde_json::to_value`/`serde_json::from_value` for type conversions — `serde_json` is only appropriate when the source is already a `serde_json::Value`.
 
