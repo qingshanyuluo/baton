@@ -32,7 +32,7 @@ jobs:
     runs-on: ${{ matrix.platform.runner }}
     timeout-minutes: 90
     environment: dockerhub-publish
-    if: github.repository == 'tensorzero/tensorzero'
+    if: github.repository == 'qingshanyuluo/baton'
     strategy:
       matrix:
         platform:
@@ -134,7 +134,7 @@ jobs:
     permissions:
       actions: read # Required to read workflow run, cache, or artifact metadata.
     environment: dockerhub-publish
-    if: github.repository == 'tensorzero/tensorzero'
+    if: github.repository == 'qingshanyuluo/baton'
     strategy:
       matrix:
         container:

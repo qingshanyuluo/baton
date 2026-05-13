@@ -16,7 +16,7 @@ jobs:
     name: slashCommandDispatch
     runs-on: ubuntu-latest
     timeout-minutes: 5
-    if: github.repository == 'tensorzero/tensorzero'
+    if: github.repository == 'qingshanyuluo/baton'
     permissions:
       pull-requests: write # For doing the emoji reaction on a PR comment
       issues: write # For doing the emoji reaction on an issue comment

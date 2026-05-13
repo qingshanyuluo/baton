@@ -17,7 +17,7 @@ jobs:
     name: Publish Helm chart to R2
     runs-on: ubuntu-latest
     timeout-minutes: 20
-    if: github.repository == 'tensorzero/tensorzero'
+    if: github.repository == 'qingshanyuluo/baton'
     permissions:
       contents: read # Required for checkout or repository metadata reads.
     # Required secrets:

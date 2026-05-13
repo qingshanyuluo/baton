@@ -18,7 +18,7 @@ concurrency:
 
 jobs:
   build-wheels:
-    if: github.repository == 'tensorzero/tensorzero'
+    if: github.repository == 'qingshanyuluo/baton'
     uses: ./.github/workflows/python-client-build.yml
     with:
       use_cache: false
@@ -27,7 +27,7 @@ jobs:
       id-token: write # Required for OIDC-backed build or publish tooling.
 
   release:
-    if: github.repository == 'tensorzero/tensorzero'
+    if: github.repository == 'qingshanyuluo/baton'
     name: Release
     runs-on: ubuntu-latest
     timeout-minutes: 30
@@ -63,7 +63,7 @@ jobs:
         continue-on-error: ${{ github.event_name == 'release' }}
 
   upgrade-tensorzero-deps:
-    if: github.repository == 'tensorzero/tensorzero' && github.event_name == 'release'
+    if: github.repository == 'qingshanyuluo/baton' && github.event_name == 'release'
     needs: [release]
     uses: ./.github/workflows/upgrade-tensorzero-deps.yml
     permissions:
