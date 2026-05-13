@@ -19,7 +19,7 @@ jobs:
     name: dispatch-autopilot
     runs-on: ubuntu-latest
     timeout-minutes: 60
-    if: github.repository == 'qingshanyuluo/baton'
+    if: github.repository == 'tensorzero/tensorzero'
     permissions:
       contents: read # Required for checkout or repository metadata reads.
     steps:

@@ -88,7 +88,7 @@ jobs:
       XAI_API_KEY: ${{ secrets.XAI_API_KEY }}
 
   live-batch-tests:
-    if: github.repository == 'qingshanyuluo/baton'
+    if: github.repository == 'tensorzero/tensorzero'
     permissions:
       contents: read # Required for checkout or repository metadata reads.
       actions: read # Required to read workflow run, cache, or artifact metadata.

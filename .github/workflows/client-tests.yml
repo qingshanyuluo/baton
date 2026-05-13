@@ -109,7 +109,7 @@ env:
 
 jobs:
   client-tests:
-    if: github.repository == 'qingshanyuluo/baton'
+    if: github.repository == 'tensorzero/tensorzero'
     name: "client-tests (batch_writes: ${{ matrix.batch_writes }})"
     runs-on: ubuntu-latest
     permissions:
