@@ -1,0 +1,13 @@
+baton:
+  failover:
+    connect-timeout: 1s
+    read-timeout: 5s
+    global-timeout: 15s
+    max-body-size: 20971520
+    max-concurrent-requests: 100
+    health-check-interval: 120s
+    health-check-threshold: 3
+
+management:
+  server:
+    port: 0

@@ -24,6 +24,7 @@ dependencies {
 	implementation("org.springframework.boot:spring-boot-configuration-processor")
 	implementation("io.micrometer:micrometer-registry-prometheus")
 	testImplementation("org.springframework.boot:spring-boot-starter-test")
+	testImplementation("org.wiremock:wiremock-standalone:3.12.1")
 	testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 
