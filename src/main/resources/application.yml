@@ -17,14 +17,27 @@ management:
 
 baton:
   backends:
-    - name: primary
-      url: http://localhost:8081
+    - name: deepseek
+      url: https://api.deepseek.com/anthropic
       priority: 1
-    - name: secondary
-      url: http://localhost:8082
+      skip-rules:
+        - type: model-pattern
+          pattern: "^claude-"
+          mode: strict
+        - type: content-type
+          values: [image, document, redacted_thinking]
+          mode: strict
+        - type: has-field
+          field: cache_control
+          mode: lenient
+        - type: header-present
+          header: anthropic-beta
+          mode: lenient
+    - name: airouter
+      url: https://airouter.cloud
       priority: 2
-    - name: tertiary
-      url: http://localhost:8083
+    - name: callapi
+      url: https://callapi.top
       priority: 3
   failover:
     connect-timeout: 3s

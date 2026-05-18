@@ -37,11 +37,14 @@ public class FailoverRouter {
     private final BatonProperties properties;
     private final Semaphore concurrencyLimiter;
     private final AtomicInteger activeStreaming = new AtomicInteger(0);
+    private final SkipRuleEvaluator skipRuleEvaluator;
 
-    public FailoverRouter(WebClient webClient, HealthTracker healthTracker, BatonProperties properties) {
+    public FailoverRouter(WebClient webClient, HealthTracker healthTracker, BatonProperties properties,
+                          SkipRuleEvaluator skipRuleEvaluator) {
         this.webClient = webClient;
         this.healthTracker = healthTracker;
         this.properties = properties;
+        this.skipRuleEvaluator = skipRuleEvaluator;
         this.concurrencyLimiter = new Semaphore(properties.failover().maxConcurrentRequests());
     }
 
@@ -91,9 +94,33 @@ public class FailoverRouter {
         }
 
         Instant deadline = Instant.now().plus(properties.failover().globalTimeout());
+        List<BackendConfig> lenientSkipped = new java.util.ArrayList<>();
         RouteResult lastError = null;
+        boolean allStrictSkipped = true;
 
+        // Round 1: try non-skip backends, collect lenient-skipped
         for (BackendConfig backend : backends) {
+            if (Instant.now().isAfter(deadline)) {
+                return RouteResult.error(HttpStatus.GATEWAY_TIMEOUT,
+                        "timeout_error", "Global timeout exceeded");
+            }
+            SkipRuleEvaluator.SkipResult skip = skipRuleEvaluator.evaluate(backend, requestHeaders, body);
+            if (skip.strict()) continue;
+            if (skip.lenient()) {
+                lenientSkipped.add(backend);
+                continue;
+            }
+            allStrictSkipped = false;
+            RouteResult result = streaming
+                    ? tryBackendStreaming(backend, path, requestHeaders, body)
+                    : tryBackend(backend, path, requestHeaders, body);
+            if (result.success()) return result;
+            if (result.noFailover()) return result;
+            lastError = result;
+        }
+
+        // Round 2: fallback to lenient-skipped backends
+        for (BackendConfig backend : lenientSkipped) {
             if (Instant.now().isAfter(deadline)) {
                 return RouteResult.error(HttpStatus.GATEWAY_TIMEOUT,
                         "timeout_error", "Global timeout exceeded");
@@ -101,12 +128,15 @@ public class FailoverRouter {
             RouteResult result = streaming
                     ? tryBackendStreaming(backend, path, requestHeaders, body)
                     : tryBackend(backend, path, requestHeaders, body);
-
             if (result.success()) return result;
             if (result.noFailover()) return result;
             lastError = result;
         }
 
+        if (allStrictSkipped && lastError == null) {
+            return RouteResult.error(HttpStatus.BAD_GATEWAY,
+                    "invalid_request_error", "No compatible backend found for this request");
+        }
         if (lastError != null && lastError.softFailover()) return lastError;
         return lastError != null ? lastError :
                 RouteResult.error(HttpStatus.BAD_GATEWAY, "overloaded_error", "All backends unavailable");

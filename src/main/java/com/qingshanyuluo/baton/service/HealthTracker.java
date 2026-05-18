@@ -109,10 +109,13 @@ public class HealthTracker {
 
     public Map<String, BackendStatus> getStatuses() {
         Map<String, BackendStatus> result = new ConcurrentHashMap<>();
-        states.forEach((name, state) -> result.put(name, new BackendStatus(
-                name, state.config.url(), state.config.priority(),
-                state.healthy.get(), state.manuallyDisabled.get()
-        )));
+        states.forEach((name, state) -> {
+            int skipRulesCount = state.config.skipRules() != null ? state.config.skipRules().size() : 0;
+            result.put(name, new BackendStatus(
+                    name, state.config.url(), state.config.priority(),
+                    state.healthy.get(), state.manuallyDisabled.get(), skipRulesCount
+            ));
+        });
         return result;
     }
 
@@ -146,8 +149,9 @@ public class HealthTracker {
                     .GET()
                     .build();
             HttpResponse<Void> response = httpClient.send(request, HttpResponse.BodyHandlers.discarding());
-            if (response.statusCode() == 200) return new HealthResult(true, false);
-            if (response.statusCode() == 404) return new HealthResult(checkTcp(backend), true);
+            int status = response.statusCode();
+            if (status == 200 || status == 401 || status == 403) return new HealthResult(true, false);
+            if (status == 404) return new HealthResult(checkTcp(backend), true);
             return new HealthResult(false, false);
         } catch (Exception e) {
             return new HealthResult(checkTcp(backend), true);
@@ -181,5 +185,5 @@ public class HealthTracker {
         }
     }
 
-    public record BackendStatus(String name, String url, int priority, boolean healthy, boolean disabled) {}
+    public record BackendStatus(String name, String url, int priority, boolean healthy, boolean disabled, int skipRulesCount) {}
 }
