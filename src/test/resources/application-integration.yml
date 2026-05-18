@@ -9,7 +9,7 @@ baton:
       url: http://localhost:19998
       priority: 2
     - name: real
-      url: https://callapi.top
+      url: https://api.deepseek.com/anthropic
       priority: 3
   failover:
     connect-timeout: 2s

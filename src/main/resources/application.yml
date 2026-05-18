@@ -27,12 +27,6 @@ baton:
         - type: content-type
           values: [image, document, redacted_thinking]
           mode: strict
-        - type: has-field
-          field: cache_control
-          mode: lenient
-        - type: header-present
-          header: anthropic-beta
-          mode: lenient
     - name: airouter
       url: https://airouter.cloud
       priority: 2
@@ -41,9 +35,9 @@ baton:
       priority: 3
   failover:
     connect-timeout: 3s
-    read-timeout: 30s
+    read-timeout: 2m
     streaming-idle-timeout: 5m
-    global-timeout: 60s
+    global-timeout: 3m
     max-body-size: 20971520
     max-concurrent-requests: 200
     health-check-interval: 30s

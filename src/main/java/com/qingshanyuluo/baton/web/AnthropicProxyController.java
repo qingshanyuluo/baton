@@ -13,7 +13,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
 import java.io.IOException;
-import java.io.OutputStream;
 
 @RestController
 public class AnthropicProxyController {
@@ -28,9 +27,11 @@ public class AnthropicProxyController {
         this.objectMapper = objectMapper;
     }
 
-    @PostMapping("/v1/messages")
-    public ResponseEntity<?> proxyMessages(@RequestBody byte[] body,
-                                            @RequestHeader HttpHeaders headers) throws IOException {
+    @PostMapping("/v1/**")
+    public ResponseEntity<?> proxyRequest(jakarta.servlet.http.HttpServletRequest request,
+                                           @RequestBody byte[] body,
+                                           @RequestHeader HttpHeaders headers) throws IOException {
+        String path = request.getRequestURI().substring(request.getContextPath().length());
         if (body.length > properties.failover().maxBodySize()) {
             return ResponseEntity.status(HttpStatus.PAYLOAD_TOO_LARGE)
                     .header("content-type", "application/json")
@@ -38,7 +39,7 @@ public class AnthropicProxyController {
         }
 
         boolean streaming = isStreamingRequest(body);
-        RouteResult result = router.route("/v1/messages", headers, body, streaming);
+        RouteResult result = router.route(path, headers, body, streaming);
 
         HttpHeaders responseHeaders = buildResponseHeaders(result);
 

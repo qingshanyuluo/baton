@@ -107,4 +107,31 @@ class AnthropicFailoverIntegrationTest {
 
         assertThat(response.getStatusCode().is4xxClientError()).isTrue();
     }
+
+    @Test
+    void shouldProxyCountTokens() {
+        String requestBody = """
+                {
+                    "model": "deepseek-v4-flash",
+                    "messages": [
+                        {"role": "user", "content": "Hello world"}
+                    ]
+                }""";
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.set("x-api-key", apiKey);
+        headers.set("anthropic-version", "2023-06-01");
+
+        HttpEntity<String> entity = new HttpEntity<>(requestBody, headers);
+        ResponseEntity<byte[]> response = restTemplate.exchange(
+                "http://localhost:" + port + "/v1/messages/count_tokens",
+                HttpMethod.POST,
+                entity,
+                byte[].class);
+
+        assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
+        String body = new String(response.getBody());
+        assertThat(body).contains("input_tokens");
+    }
 }
