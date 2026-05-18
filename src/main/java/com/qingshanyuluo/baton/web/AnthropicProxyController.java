@@ -6,11 +6,7 @@ import com.qingshanyuluo.baton.config.BatonProperties;
 import com.qingshanyuluo.baton.service.FailoverRouter;
 import com.qingshanyuluo.baton.service.RouteResult;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
 import java.io.IOException;
 
@@ -28,31 +24,37 @@ public class AnthropicProxyController {
     }
 
     @PostMapping("/v1/**")
-    public ResponseEntity<?> proxyRequest(jakarta.servlet.http.HttpServletRequest request,
-                                           @RequestBody byte[] body,
-                                           @RequestHeader HttpHeaders headers) throws IOException {
+    public void proxyRequest(jakarta.servlet.http.HttpServletRequest request,
+                              jakarta.servlet.http.HttpServletResponse response,
+                              @RequestBody byte[] body,
+                              @RequestHeader HttpHeaders headers) throws IOException {
         String path = request.getRequestURI().substring(request.getContextPath().length());
         if (body.length > properties.failover().maxBodySize()) {
-            return ResponseEntity.status(HttpStatus.PAYLOAD_TOO_LARGE)
-                    .header("content-type", "application/json")
-                    .body(errorBody("invalid_request_error", "Request body too large"));
+            response.setStatus(413);
+            response.setContentType("application/json");
+            response.getOutputStream().write(errorBody("invalid_request_error", "Request body too large"));
+            return;
         }
 
         boolean streaming = isStreamingRequest(body);
         RouteResult result = router.route(path, headers, body, streaming);
 
-        HttpHeaders responseHeaders = buildResponseHeaders(result);
-
-        if (result.isStreaming()) {
-            return ResponseEntity.status(result.status())
-                    .headers(responseHeaders)
-                    .contentType(MediaType.TEXT_EVENT_STREAM)
-                    .body(result.streamingBody());
+        response.setStatus(result.status().value());
+        if (result.headers() != null) {
+            result.headers().forEach((name, values) -> {
+                if (!name.equalsIgnoreCase("transfer-encoding")) {
+                    values.forEach(v -> response.addHeader(name, v));
+                }
+            });
         }
 
-        return ResponseEntity.status(result.status())
-                .headers(responseHeaders)
-                .body(result.body());
+        if (result.isStreaming() && result.streamingBody() != null) {
+            response.setContentType("text/event-stream");
+            result.streamingBody().writeTo(response.getOutputStream());
+            response.flushBuffer();
+        } else if (result.body() != null) {
+            response.getOutputStream().write(result.body());
+        }
     }
 
     private boolean isStreamingRequest(byte[] body) {
