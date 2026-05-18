@@ -21,9 +21,6 @@ baton:
       url: https://api.deepseek.com/anthropic
       priority: 1
       skip-rules:
-        - type: model-pattern
-          pattern: "^claude-"
-          mode: strict
         - type: content-type
           values: [image, document, redacted_thinking]
           mode: strict
