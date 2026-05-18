@@ -1,0 +1,30 @@
+baton:
+  backends:
+    - name: b1
+      url: http://localhost:19101
+      priority: 1
+      skip-rules:
+        - type: model-pattern
+          pattern: "^claude-"
+          mode: strict
+        - type: content-type
+          values: [image, document]
+          mode: strict
+    - name: b2
+      url: http://localhost:19102
+      priority: 2
+    - name: b3
+      url: http://localhost:19103
+      priority: 3
+  failover:
+    connect-timeout: 1s
+    read-timeout: 5s
+    global-timeout: 15s
+    max-body-size: 20971520
+    max-concurrent-requests: 100
+    health-check-interval: 120s
+    health-check-threshold: 3
+
+management:
+  server:
+    port: 0
