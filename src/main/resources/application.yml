@@ -1,0 +1,37 @@
+spring:
+  application:
+    name: baton
+  main:
+    banner-mode: off
+
+server:
+  port: 8080
+
+management:
+  server:
+    port: 8090
+  endpoints:
+    web:
+      exposure:
+        include: backends,health
+
+baton:
+  backends:
+    - name: primary
+      url: http://localhost:8081
+      priority: 1
+    - name: secondary
+      url: http://localhost:8082
+      priority: 2
+    - name: tertiary
+      url: http://localhost:8083
+      priority: 3
+  failover:
+    connect-timeout: 3s
+    read-timeout: 30s
+    streaming-idle-timeout: 5m
+    global-timeout: 60s
+    max-body-size: 20971520
+    max-concurrent-requests: 200
+    health-check-interval: 30s
+    health-check-threshold: 3
